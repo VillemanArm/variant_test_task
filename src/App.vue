@@ -4,7 +4,7 @@ import NewComponent from './components/NewComponent.vue'
 </script>
 
 <template>
-  <NewComponent msg="You did it!" />
+  <NewComponent />
 
 </template>
 
