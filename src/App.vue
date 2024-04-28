@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import NewComponent from './components/NewComponent.vue'
+import canvasFor3D from './components/canvasFor3D.vue'
 </script>
 
 <template>
-  <NewComponent />
+  <canvasFor3D />
 
 </template>
 
@@ -12,3 +12,4 @@ import NewComponent from './components/NewComponent.vue'
   @import '@/assets/styles/constants.sass'
 
 </style>
+./components/canvasFor3D.vue
