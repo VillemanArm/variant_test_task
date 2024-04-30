@@ -2,11 +2,23 @@
 import { reactive, ref, computed, onMounted, onUpdated, watch } from 'vue'
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/Addons.js';
+import addMenu from '@/components/addMenu.vue'
 
 // defineProps<{
 // 	msg: string;
 // }>();
 
+// interface Geometry {
+// 	name: string,
+// 	path: string,
+// }
+
+// export type {Geometry}
+
+const geometries: string[] = ['chair', 'cube', 'helmet', 'suzanne']
+const texturesTypes: string[] = ['albedo', 'metalness', 'normal', 'roughness']
+const texturesMaterials: string[] = ['leather', 'metal', 'velours', 'wood']
+	
 
 const canvas = ref<HTMLInputElement>() // элемент, в котором будет отображаться 3D элемент
 const currentMesh = ref<THREE.Mesh>()
@@ -47,9 +59,9 @@ const createRenderer = () => {
 
 const meshLoader = new GLTFLoader();
 
-const addMesh = (meshPath: string) => { //'/meshes/geometries/cube.glb'
+const addMesh = (meshName: string) => { //'/meshes/geometries/cube.glb'
 	meshLoader.load(
-		meshPath, 
+		`/meshes/geometries/${meshName}.glb`, 
 		(gltf) => {
 			const mesh: THREE.Object3D = gltf.scene.children[0]
 			scene.add(mesh)
@@ -98,24 +110,36 @@ onMounted(() => {
 	createRenderer()
 	renderer.render(scene, camera)
 
-	addMesh('/meshes/geometries/cube.glb')
 
 })
 
 </script>
 
 <template>
-	<canvas ref="canvas" class="canvas"></canvas>
+	<div class="canvas__wrap">
+		<canvas ref="canvas" class="canvas"></canvas>
+		<addMenu :geometries="geometries" :addMesh="addMesh"/>
+	</div>
 </template>
 
 <style lang="sass">
 	@import '@/assets/styles/constants.sass'
-	body
+	// body
+	// 	overflow: hidden
+
+	.canvas__wrap
+		position: relative
 		overflow: hidden
 
 	.canvas
 		width: 100vw
 		height: 100vh
+		
+
+	.add-menu
+		top: 10px
+		right: 10px
+	
 
 </style>
 
