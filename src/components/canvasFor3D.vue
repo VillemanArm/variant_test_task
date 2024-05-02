@@ -2,26 +2,62 @@
 import { reactive, ref, computed, onMounted, onUpdated, watch } from 'vue'
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/Addons.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import { REVISION } from "three"
 import addMenu from '@/components/addMenu.vue'
+import meshMenu from '@/components/meshMenu.vue'
+
+
 
 // defineProps<{
 // 	msg: string;
 // }>();
+interface Materials {
+	[propName: string]: String
+}
 
-// interface Geometry {
-// 	name: string,
-// 	path: string,
-// }
+interface Textures {
+	[propName: string]: Materials
+}
 
-// export type {Geometry}
+export type {Textures}
 
+const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`
 const geometries: string[] = ['chair', 'cube', 'helmet', 'suzanne']
-const texturesTypes: string[] = ['albedo', 'metalness', 'normal', 'roughness']
-const texturesMaterials: string[] = ['leather', 'metal', 'velours', 'wood']
+const textureTypes: string[] = ['albedo', 'metalness', 'normal', 'roughness']
+const textureMaterials: string[] = ['leather', 'metal', 'velours', 'wood']
+const texturesPaths: Textures = { // структура для выбора текстур сделана так чтобы оставаться независимой при добавлении новых текстур
+	albedo: {
+		leather: '/meshes/textures/albedo/albedo-leather.ktx2', 
+		metal: '/meshes/textures/albedo/albedo-metal.png', 
+		velours: '/meshes/textures/albedo/albedo-velours.png', 
+		wood: '/meshes/textures/albedo/albedo-wood.png'
+	}, 
+	metalness: {
+		leather: '/meshes/textures/metalness/metalness-leather.ktx2', 
+		metal: '/meshes/textures/metalness/metalness-metal.png', 
+		velours: '/meshes/textures/metalness/metalness-velours.png', 
+		wood: '/meshes/textures/metalness/metalness-wood.png'
+	}, 
+	normal: {
+		leather: '/meshes/textures/normal/normal-leather.ktx2', 
+		metal: '/meshes/textures/normal/normal-metal.png', 
+		velours: '/meshes/textures/normal/normal-velours.png', 
+		wood: '/meshes/textures/normal/normal-wood.png'
+	}, 
+	roughness: {
+		leather: '/meshes/textures/roughness/roughness-leather.ktx2', 
+		metal: '/meshes/textures/roughness/roughness-metal.png', 
+		velours: '/meshes/textures/roughness/roughness-velours.png', 
+		wood: '/meshes/textures/roughness/roughness-wood.png'
+	}
+}
 	
 
 const canvas = ref<HTMLInputElement>() // элемент, в котором будет отображаться 3D элемент
-const currentMesh = ref<THREE.Mesh>()
+const selectedMesh = ref<THREE.Mesh>()
+let selectedMeshKTX: THREE.Mesh
+
 
 const scene = new THREE.Scene();
 
@@ -65,8 +101,8 @@ const addMesh = (meshName: string) => { //'/meshes/geometries/cube.glb'
 		(gltf) => {
 			const mesh: THREE.Object3D = gltf.scene.children[0]
 			scene.add(mesh)
+			selectedMesh.value = mesh as THREE.Mesh //scene.getObjectById(mesh.id)
 			renderer.render(scene, camera)
-			currentMesh.value = mesh as THREE.Mesh
 		},
 		undefined,
 		(error) => {
@@ -75,22 +111,44 @@ const addMesh = (meshName: string) => { //'/meshes/geometries/cube.glb'
 	)
 }
 
-const textureLoader = new THREE.TextureLoader();
+const ktx2Loader = new KTX2Loader();
+ktx2Loader.setTranscoderPath( `${THREE_PATH}/examples/jsm/libs/basis/` );
 
-const addTexture = (texturePath: string) => { //'/meshes/textures/albedo/albedo-wood.png'
-	textureLoader.load(
-	texturePath,
-	(texture) => {
-		if (currentMesh.value) {
-			currentMesh.value.material =  new THREE.MeshStandardMaterial( { map: texture} )
-			renderer.render(scene, camera)
+
+
+const setTexture = (textureMaterialPath: string) => { //'/meshes/textures/albedo/albedo-wood.png'
+	if (textureMaterialPath) {
+		if (textureMaterialPath.endsWith('.ktx2')) {
+			ktx2Loader.detectSupport(renderer);
+			ktx2Loader.load( textureMaterialPath, function ( texture ) {			
+				if (selectedMesh.value) {
+					selectedMesh.value.material = new THREE.MeshStandardMaterial( { map: texture} )
+					renderer.render(scene, camera)
+				}
+			}, 
+			undefined,
+			function (error) {
+				console.error(error);
+			} );
+
+		}else {
+			const textureLoader = new THREE.TextureLoader();
+			textureLoader.load(
+				textureMaterialPath,
+				(texture) => {
+					if (selectedMesh.value) {
+						selectedMesh.value.material = new THREE.MeshStandardMaterial( { map: texture} )
+						renderer.render(scene, camera)
+					}
+				},
+				undefined,
+				(error) => {
+					console.log(error);
+				}
+			)
 		}
-	},
-	undefined,
-	(error) => {
-		console.log(error);
 	}
-	)
+	
 }
 
 // watch(meshes, () => {
@@ -105,6 +163,13 @@ const addTexture = (texturePath: string) => { //'/meshes/textures/albedo/albedo-
 // 	// renderer.render(scene, camera)
 	
 // }, {deep: true})
+const setMeshPosition = (event: Event, axis: 'x' | 'y' | 'z') => {
+	if (selectedMesh.value && event.target) {
+		const target = event.target as HTMLInputElement
+		selectedMesh.value.position[axis] = +target.value 
+		renderer.render(scene, camera)
+	}
+}
 
 onMounted(() => {
 	createRenderer()
@@ -119,6 +184,16 @@ onMounted(() => {
 	<div class="canvas__wrap">
 		<canvas ref="canvas" class="canvas"></canvas>
 		<addMenu :geometries="geometries" :addMesh="addMesh"/>
+		<meshMenu 
+			v-if="selectedMesh" 
+			:mesh="selectedMesh"
+			:textureTypes="textureTypes"
+			:textureMaterials="textureMaterials"
+			:texturesPaths="texturesPaths"
+			:setMeshPosition="setMeshPosition"
+			:setTexture="setTexture"
+		/>
+
 	</div>
 </template>
 
@@ -139,7 +214,10 @@ onMounted(() => {
 	.add-menu
 		top: 10px
 		right: 10px
-	
+
+	.mesh-menu
+		top: 65px
+		right: 10px
 
 </style>
 

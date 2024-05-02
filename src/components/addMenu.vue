@@ -29,7 +29,7 @@ const geometrySelect = ref<HTMLInputElement>()
                 if(geometrySelect) addMesh(geometrySelect.value)
                }"
         >
-            add mesh
+            Add mesh
         </button>
     </div>
 
@@ -53,6 +53,8 @@ const geometrySelect = ref<HTMLInputElement>()
         &>select
             width: 180px
             height: 25px
+
+            cursor: pointer
 
         &>button
             padding: 2px 6px

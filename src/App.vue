@@ -12,4 +12,3 @@ import canvasFor3D from './components/canvasFor3D.vue'
   @import '@/assets/styles/constants.sass'
 
 </style>
-./components/canvasFor3D.vue
