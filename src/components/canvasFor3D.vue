@@ -111,6 +111,17 @@ const addMesh = (meshName: string) => { //'/meshes/geometries/cube.glb'
 	)
 }
 
+const delMesh = () => {
+	if (selectedMesh.value) {
+		const objectToRemove = scene.getObjectByName(selectedMesh.value.name);
+		if (objectToRemove) {
+			scene.remove(objectToRemove)
+			renderer.render(scene, camera)
+		}
+
+	}
+}
+
 const ktx2Loader = new KTX2Loader();
 ktx2Loader.setTranscoderPath( `${THREE_PATH}/examples/jsm/libs/basis/` );
 
@@ -187,11 +198,10 @@ onMounted(() => {
 		<meshMenu 
 			v-if="selectedMesh" 
 			:mesh="selectedMesh"
-			:textureTypes="textureTypes"
-			:textureMaterials="textureMaterials"
 			:texturesPaths="texturesPaths"
 			:setMeshPosition="setMeshPosition"
 			:setTexture="setTexture"
+			:delMesh="delMesh"
 		/>
 
 	</div>

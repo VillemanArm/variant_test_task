@@ -23,6 +23,10 @@ const { mesh } = defineProps({ // получение переменной из �
         type: Object,
         required: true,
     },
+    delMesh: {
+        type: Function,
+        required: true,
+    },
 });
 
 const selectedTextureType = ref<String>()
@@ -70,9 +74,7 @@ const selectedTextureType = ref<String>()
         </div>
         
         <button class="mesh-menu__button"
-            @click="() => {
-                console.log('delete mesh')
-            }"
+            @click="delMesh()"
         >
             Delete mesh
         </button>
