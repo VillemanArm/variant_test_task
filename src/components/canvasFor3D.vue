@@ -68,7 +68,7 @@ const axesHelper = new THREE.AxesHelper( 2 ); // создание объекта
 scene.add( axesHelper)
 
 const camera = new THREE.PerspectiveCamera( 70, (canvas.value?.offsetWidth || window.innerWidth) / (canvas.value?.offsetHeight || window.innerHeight)); // создание камеры. передаем угол обзора в градусах и соотношение сторон
-camera.position.set(3, 3, 3) // установка позиции камеры x, y, z
+camera.position.set(4, 4, 4) // установка позиции камеры x, y, z
 camera.lookAt(scene.position); // направление камеры в центр сцены
 scene.add( camera )
 
@@ -117,6 +117,7 @@ const delMesh = () => {
 		if (objectToRemove) {
 			scene.remove(objectToRemove)
 			renderer.render(scene, camera)
+			selectedMesh.value = undefined
 		}
 
 	}
@@ -124,8 +125,6 @@ const delMesh = () => {
 
 const ktx2Loader = new KTX2Loader();
 ktx2Loader.setTranscoderPath( `${THREE_PATH}/examples/jsm/libs/basis/` );
-
-
 
 const setTexture = (textureMaterialPath: string) => { //'/meshes/textures/albedo/albedo-wood.png'
 	if (textureMaterialPath) {
@@ -162,18 +161,23 @@ const setTexture = (textureMaterialPath: string) => { //'/meshes/textures/albedo
 	
 }
 
-// watch(meshes, () => {
-// 	console.log(meshes);
-// 	console.log('meshes changed');
-	
-// 	// scene.add(meshes.value[meshes.value.length - 1])
-// 	// 	const geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.5 ); // создание объекта
-// 	// const material = new THREE.MeshStandardMaterial( { color: 'green'} ); // на этом материале отображается изменение цвета
-// 	// const cube = new THREE.Mesh( geometry, material );
-// 	// scene.add( cube );
-// 	// renderer.render(scene, camera)
-	
-// }, {deep: true})
+function selectMesh(event) {
+    const mouse = new THREE.Vector2();
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0) {
+        const selectedObject = intersects[0].object;
+		selectedMesh.value = selectedObject as THREE.Mesh		
+    }
+}
+
+
 const setMeshPosition = (event: Event, axis: 'x' | 'y' | 'z') => {
 	if (selectedMesh.value && event.target) {
 		const target = event.target as HTMLInputElement
@@ -185,15 +189,13 @@ const setMeshPosition = (event: Event, axis: 'x' | 'y' | 'z') => {
 onMounted(() => {
 	createRenderer()
 	renderer.render(scene, camera)
-
-
 })
 
 </script>
 
 <template>
 	<div class="canvas__wrap">
-		<canvas ref="canvas" class="canvas"></canvas>
+		<canvas ref="canvas" class="canvas" @click="selectMesh($event)"></canvas>
 		<addMenu :geometries="geometries" :addMesh="addMesh"/>
 		<meshMenu 
 			v-if="selectedMesh" 
