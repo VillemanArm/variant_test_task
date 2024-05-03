@@ -1,8 +1,6 @@
 <script setup lang='ts'>
 import { reactive, ref, computed, onMounted, onUpdated, watch } from 'vue'
 import * as THREE from 'three';
-//import type {Geometry} from './canvasFor3D.vue'
-
 
 // defineProps<{
 //     mesh: THREE.Mesh,
@@ -13,14 +11,6 @@ const { mesh } = defineProps({ // получение переменной из �
 		type: THREE.Mesh,
 		required: true,
 	},
-    // textureTypes: {
-    //     type: Array,
-    //     required: true,
-    // },
-    // textureMaterials: {
-    //     type: Array,
-    //     required: true,
-    // },
     setMeshPosition: {
         type: Function,
         required: true,
@@ -35,12 +25,7 @@ const { mesh } = defineProps({ // получение переменной из �
     },
 });
 
-const textureTypeSelect = ref<HTMLInputElement>() 
-const textureMaterialSelect = ref<HTMLInputElement>() 
-
-onMounted(() => {
-    
-})
+const selectedTextureType = ref<String>()
 
 </script>
 
@@ -58,7 +43,8 @@ onMounted(() => {
         </div>
         <div class="mesh-menu__row">
             <div class="mesh-menu__row-label">Texture type:</div>
-            <select ref="textureTypeSelect" @change="setTexture(texturesPaths[$event.target.value][textureMaterialSelect.value])">
+            <select v-model="selectedTextureType" > 
+                <option value=""></option>
                 <option 
                     v-for="(textureType, index) in Object.keys(texturesPaths)" 
                     :value="textureType" 
@@ -70,9 +56,11 @@ onMounted(() => {
         </div>
         <div class="mesh-menu__row">
             <div class="mesh-menu__row-label">Texture material:</div>
-            <select v-if="textureTypeSelect" ref="textureMaterialSelect" @change="setTexture(texturesPaths[textureTypeSelect.value][$event.target.value])">
+            <select @change="setTexture(texturesPaths[selectedTextureType][$event.target.value])">
+                <option value=""></option>
                 <option 
-                    v-for="(textureMaterial, index) in Object.keys(texturesPaths[textureTypeSelect.value])" 
+                    v-if="selectedTextureType"
+                    v-for="(textureMaterial, index) in Object.keys(texturesPaths[selectedTextureType])" 
                     :value="textureMaterial" 
                     :key="`${textureMaterial} + ${index}`"
                 >
@@ -83,7 +71,7 @@ onMounted(() => {
         
         <button class="mesh-menu__button"
             @click="() => {
-                //if(geometrySelect) addMesh(geometrySelect.value)
+                console.log('delete mesh')
             }"
         >
             Delete mesh

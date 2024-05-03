@@ -56,7 +56,7 @@ const texturesPaths: Textures = { // структура для выбора те
 
 const canvas = ref<HTMLInputElement>() // элемент, в котором будет отображаться 3D элемент
 const selectedMesh = ref<THREE.Mesh>()
-let selectedMeshKTX: THREE.Mesh
+
 
 
 const scene = new THREE.Scene();
