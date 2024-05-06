@@ -4,14 +4,10 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/Addons.js';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { REVISION } from "three"
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import addMenu from '@/components/addMenu.vue'
 import meshMenu from '@/components/meshMenu.vue'
 
-
-
-// defineProps<{
-// 	msg: string;
-// }>();
 interface Materials {
 	[propName: string]: String
 }
@@ -24,8 +20,6 @@ export type {Textures}
 
 const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`
 const geometries: string[] = ['chair', 'cube', 'helmet', 'suzanne']
-const textureTypes: string[] = ['albedo', 'metalness', 'normal', 'roughness']
-const textureMaterials: string[] = ['leather', 'metal', 'velours', 'wood']
 const texturesPaths: Textures = { // структура для выбора текстур сделана так чтобы оставаться независимой при добавлении новых текстур
 	albedo: {
 		leather: '/meshes/textures/albedo/albedo-leather.ktx2', 
@@ -54,10 +48,8 @@ const texturesPaths: Textures = { // структура для выбора те
 }
 	
 
-const canvas = ref<HTMLInputElement>() // элемент, в котором будет отображаться 3D элемент
+let canvas: HTMLElement // элемент, в котором будет отображаться 3D элемент
 const selectedMesh = ref<THREE.Mesh>()
-
-
 
 const scene = new THREE.Scene();
 
@@ -67,10 +59,7 @@ scene.add(gridHelper)
 const axesHelper = new THREE.AxesHelper( 2 ); // создание объекта, показыващего оси. Принимает длину осей
 scene.add( axesHelper)
 
-const camera = new THREE.PerspectiveCamera( 70, (canvas.value?.offsetWidth || window.innerWidth) / (canvas.value?.offsetHeight || window.innerHeight)); // создание камеры. передаем угол обзора в градусах и соотношение сторон
-camera.position.set(4, 4, 4) // установка позиции камеры x, y, z
-camera.lookAt(scene.position); // направление камеры в центр сцены
-scene.add( camera )
+let camera: THREE.PerspectiveCamera
 
 const light = new THREE.DirectionalLight(0xffffff, 1); // создание света
 light.position.set(5, 4, 2);
@@ -79,29 +68,31 @@ scene.add(light)
 let renderer: THREE.WebGLRenderer
 
 const createRenderer = () => {
-	renderer = new THREE.WebGLRenderer({ canvas: canvas.value}); // создание отрисовщика
+	renderer = new THREE.WebGLRenderer({ canvas: canvas}); // создание отрисовщика
 	renderer.setClearColor('grey') // установка цвета фона
-	renderer.setSize( canvas.value?.offsetWidth || window.innerWidth, canvas.value?.offsetHeight || window.innerHeight) // установка размера рендерера
+	renderer.setSize( canvas?.offsetWidth || window.innerWidth, canvas?.offsetHeight || window.innerHeight) // установка размера рендерера
 }
 
-// const renderScene = (): void => {
-// 	renderer.render(scene, camera)
-// 	requestAnimationFrame(renderScene)
+const renderScene = (): void => {
+	renderer.render(scene, camera)
+	requestAnimationFrame(renderScene)
 	// cube.rotation.x += 0.01
 	// cube.rotation.y += 0.01
-// }
-
-// renderScene()
+}
 
 const meshLoader = new GLTFLoader();
 
-const addMesh = (meshName: string) => { //'/meshes/geometries/cube.glb'
+const addMesh = (meshName: string) => {
 	meshLoader.load(
 		`/meshes/geometries/${meshName}.glb`, 
-		(gltf) => {
-			const mesh: THREE.Object3D = gltf.scene.children[0]
-			scene.add(mesh)
-			selectedMesh.value = mesh as THREE.Mesh //scene.getObjectById(mesh.id)
+		(gltf) => {		
+			selectedMesh.value = gltf.scene.children[0]	as THREE.Mesh
+			gltf.scene.children.forEach((mesh) => {
+					console.log(mesh)
+					scene.add(mesh);
+				}
+			);
+			
 			renderer.render(scene, camera)
 		},
 		undefined,
@@ -116,17 +107,18 @@ const delMesh = () => {
 		const objectToRemove = scene.getObjectByName(selectedMesh.value.name);
 		if (objectToRemove) {
 			scene.remove(objectToRemove)
-			renderer.render(scene, camera)
 			selectedMesh.value = undefined
+			renderer.render(scene, camera)
 		}
-
 	}
 }
 
-const ktx2Loader = new KTX2Loader();
+const ktx2Loader = new KTX2Loader(); // создан вне функции, так как иначе возникает ошибка из-за создания нескольких ktx загрузчиков
 ktx2Loader.setTranscoderPath( `${THREE_PATH}/examples/jsm/libs/basis/` );
 
-const setTexture = (textureMaterialPath: string) => { //'/meshes/textures/albedo/albedo-wood.png'
+const textureLoader = new THREE.TextureLoader();
+
+const setTexture = (textureMaterialPath: string) => {
 	if (textureMaterialPath) {
 		if (textureMaterialPath.endsWith('.ktx2')) {
 			ktx2Loader.detectSupport(renderer);
@@ -139,10 +131,9 @@ const setTexture = (textureMaterialPath: string) => { //'/meshes/textures/albedo
 			undefined,
 			function (error) {
 				console.error(error);
-			} );
-
-		}else {
-			const textureLoader = new THREE.TextureLoader();
+			} 
+		);
+		}else {			
 			textureLoader.load(
 				textureMaterialPath,
 				(texture) => {
@@ -157,11 +148,10 @@ const setTexture = (textureMaterialPath: string) => { //'/meshes/textures/albedo
 				}
 			)
 		}
-	}
-	
+	}	
 }
 
-function selectMesh(event) {
+function selectMesh(event: MouseEvent) {
     const mouse = new THREE.Vector2();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -172,11 +162,14 @@ function selectMesh(event) {
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     if (intersects.length > 0) {
-        const selectedObject = intersects[0].object;
-		selectedMesh.value = selectedObject as THREE.Mesh		
+		for (let i = 0; i < intersects.length; i++) {
+			if (intersects[i].object instanceof THREE.Mesh) {
+				selectedMesh.value = intersects[i].object as THREE.Mesh
+				break				
+			}
+		}
     }
 }
-
 
 const setMeshPosition = (event: Event, axis: 'x' | 'y' | 'z') => {
 	if (selectedMesh.value && event.target) {
@@ -187,15 +180,31 @@ const setMeshPosition = (event: Event, axis: 'x' | 'y' | 'z') => {
 }
 
 onMounted(() => {
+	canvas = document.querySelector('.canvas') as HTMLElement
+
 	createRenderer()
-	renderer.render(scene, camera)
+
+	camera = new THREE.PerspectiveCamera( 70, (canvas?.offsetWidth || window.innerWidth) / (canvas?.offsetHeight || window.innerHeight)); // создание камеры. передаем угол обзора в градусах и соотношение сторон
+	camera.position.set(4, 4, 4)
+	camera.lookAt(scene.position); 
+
+	const controls = new OrbitControls(camera, renderer.domElement)
+	
+	scene.add( camera )
+	controls.update();
+
+	renderScene()
 })
 
 </script>
 
 <template>
 	<div class="canvas__wrap">
-		<canvas ref="canvas" class="canvas" @click="selectMesh($event)"></canvas>
+		<canvas 
+			class="canvas" 
+			@click="selectMesh($event)"
+		>
+		</canvas>
 		<addMenu :geometries="geometries" :addMesh="addMesh"/>
 		<meshMenu 
 			v-if="selectedMesh" 
