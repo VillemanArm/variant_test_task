@@ -46,7 +46,6 @@ const texturesPaths: Textures = { // структура для выбора те
 		wood: '/meshes/textures/roughness/roughness-wood.png'
 	}
 }
-	
 
 let canvas: HTMLElement // элемент, в котором будет отображаться 3D элемент
 const selectedMesh = ref<THREE.Mesh>()

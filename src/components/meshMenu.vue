@@ -1,33 +1,19 @@
 <script setup lang='ts'>
 import { reactive, ref, computed, onMounted, onUpdated, watch } from 'vue'
 import * as THREE from 'three';
+import type { Textures } from '@/components/canvasFor3D.vue'
 
 // defineProps<{
 //     mesh: THREE.Mesh,
 // }>();
 
-const { mesh } = defineProps({ // получение переменной из пропсов
-	mesh: {
-		type: THREE.Mesh,
-		required: true,
-	},
-    setMeshPosition: {
-        type: Function,
-        required: true,
-    },
-    setTexture: {
-        type: Function,
-        required: true,
-    },
-    texturesPaths: {
-        type: Object,
-        required: true,
-    },
-    delMesh: {
-        type: Function,
-        required: true,
-    },
-});
+const { mesh, texturesPaths } = defineProps<{ 
+	mesh: THREE.Mesh,
+    setMeshPosition: Function,
+    setTexture: Function,
+    texturesPaths: Textures,
+    delMesh: Function,
+}>();
 
 const selectedTextureType = ref<String>()
 
@@ -60,7 +46,7 @@ const selectedTextureType = ref<String>()
         </div>
         <div class="mesh-menu__row">
             <div class="mesh-menu__row-label">Texture material:</div>
-            <select @change="setTexture(texturesPaths[selectedTextureType][$event.target.value])">
+            <select v-if="typeof selectedTextureType === 'string'" @change="setTexture(texturesPaths[selectedTextureType][$event.target?.value])">
                 <option value=""></option>
                 <option 
                     v-if="selectedTextureType"
