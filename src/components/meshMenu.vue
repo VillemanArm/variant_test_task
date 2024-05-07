@@ -2,14 +2,18 @@
 import { reactive, ref, computed, onMounted, onUpdated, watch } from 'vue'
 import * as THREE from 'three';
 import type { Textures } from '@/components/canvasFor3D.vue'
+import type { FunctionNode } from 'three/examples/jsm/nodes/Nodes.js';
 
 // defineProps<{
 //     mesh: THREE.Mesh,
 // }>();
 
+
+
 const { mesh, texturesPaths } = defineProps<{ 
 	mesh: THREE.Mesh,
     setMeshPosition: Function,
+    setMeshScale: Function,
     setTexture: Function,
     texturesPaths: Textures,
     delMesh: Function,
@@ -26,9 +30,17 @@ const selectedTextureType = ref<String>()
         <div class="mesh-menu__row">
             <div class="mesh-menu__row-label">Position:</div>
             <div class="mesh-menu__position">
-                <input type="number" :value="mesh.position.x" @input="setMeshPosition($event, 'x')">
-                <input type="number" :value="mesh.position.y" @input="setMeshPosition($event, 'y')">
-                <input type="number" :value="mesh.position.z" @input="setMeshPosition($event, 'z')">
+                <input type="number" step="0.1" :value="mesh.position.x" @input="setMeshPosition($event, 'x')">
+                <input type="number" step="0.1" :value="mesh.position.y" @input="setMeshPosition($event, 'y')">
+                <input type="number" step="0.1" :value="mesh.position.z" @input="setMeshPosition($event, 'z')">
+            </div>
+        </div>
+        <div class="mesh-menu__row">
+            <div class="mesh-menu__row-label">Scale:</div>
+            <div class="mesh-menu__position">
+                <input type="number" min="0" step="0.1" :value="mesh.scale.x" @input="setMeshScale($event, 'x')">
+                <input type="number" min="0" step="0.1" :value="mesh.scale.y" @input="setMeshScale($event, 'y')">
+                <input type="number" min="0" step="0.1" :value="mesh.scale.z" @input="setMeshScale($event, 'z')">
             </div>
         </div>
         <div class="mesh-menu__row">
@@ -46,7 +58,7 @@ const selectedTextureType = ref<String>()
         </div>
         <div class="mesh-menu__row">
             <div class="mesh-menu__row-label">Texture material:</div>
-            <select v-if="typeof selectedTextureType === 'string'" @change="setTexture(texturesPaths[selectedTextureType][$event.target?.value])">
+            <select v-if="typeof selectedTextureType === 'string'" @change="setTexture(texturesPaths[selectedTextureType][$event.target?.value] )">
                 <option value=""></option>
                 <option 
                     v-if="selectedTextureType"

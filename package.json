@@ -11,8 +11,10 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "p5-gizmo": "^1.0.0",
     "pinia": "^2.1.7",
     "three": "^0.164.1",
+    "three-gizmo": "^1.0.30",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },

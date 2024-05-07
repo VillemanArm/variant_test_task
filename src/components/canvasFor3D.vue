@@ -174,7 +174,13 @@ const setMeshPosition = (event: Event, axis: 'x' | 'y' | 'z') => {
 	if (selectedMesh.value && event.target) {
 		const target = event.target as HTMLInputElement
 		selectedMesh.value.position[axis] = +target.value 
-		renderer.render(scene, camera)
+	}
+}
+
+const setMeshScale = (event: Event, axis: 'x' | 'y' | 'z') => {
+	if (selectedMesh.value && event.target) {
+		const target = event.target as HTMLInputElement
+		selectedMesh.value.scale[axis] = +target.value 
 	}
 }
 
@@ -195,6 +201,10 @@ onMounted(() => {
 	renderScene()
 })
 
+
+
+
+
 </script>
 
 <template>
@@ -210,6 +220,7 @@ onMounted(() => {
 			:mesh="selectedMesh"
 			:texturesPaths="texturesPaths"
 			:setMeshPosition="setMeshPosition"
+			:setMeshScale="setMeshScale"
 			:setTexture="setTexture"
 			:delMesh="delMesh"
 		/>
