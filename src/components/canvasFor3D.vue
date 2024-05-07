@@ -184,6 +184,13 @@ const setMeshScale = (event: Event, axis: 'x' | 'y' | 'z') => {
 	}
 }
 
+const setMeshAngle = (event: Event, axis: 'x' | 'y' | 'z') => {
+	if (selectedMesh.value && event.target) {
+		const target = event.target as HTMLInputElement
+		selectedMesh.value.rotation[axis] = +target.value * Math.PI * 2 / 360 
+	}
+}
+
 onMounted(() => {
 	canvas = document.querySelector('.canvas') as HTMLElement
 
@@ -221,6 +228,7 @@ onMounted(() => {
 			:texturesPaths="texturesPaths"
 			:setMeshPosition="setMeshPosition"
 			:setMeshScale="setMeshScale"
+			:setMeshAngle="setMeshAngle"
 			:setTexture="setTexture"
 			:delMesh="delMesh"
 		/>

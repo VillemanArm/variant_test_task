@@ -14,6 +14,7 @@ const { mesh, texturesPaths } = defineProps<{
 	mesh: THREE.Mesh,
     setMeshPosition: Function,
     setMeshScale: Function,
+    setMeshAngle: Function,
     setTexture: Function,
     texturesPaths: Textures,
     delMesh: Function,
@@ -33,6 +34,14 @@ const selectedTextureType = ref<String>()
                 <input type="number" step="0.1" :value="mesh.position.x" @input="setMeshPosition($event, 'x')">
                 <input type="number" step="0.1" :value="mesh.position.y" @input="setMeshPosition($event, 'y')">
                 <input type="number" step="0.1" :value="mesh.position.z" @input="setMeshPosition($event, 'z')">
+            </div>
+        </div>
+        <div class="mesh-menu__row">
+            <div class="mesh-menu__row-label">Rotation:</div>
+            <div class="mesh-menu__position">
+                <input type="number" min="-360" step="1" :value="Math.round(mesh.rotation.x * 180 / Math.PI)" @input="setMeshAngle($event, 'x')">
+                <input type="number" min="-360" :value="Math.round(mesh.rotation.y * 180 / Math.PI)" @input="setMeshAngle($event, 'y')">
+                <input type="number" min="-360" :value="Math.round(mesh.rotation.z  * 180 / Math.PI)" @input="setMeshAngle($event, 'z')">
             </div>
         </div>
         <div class="mesh-menu__row">
@@ -58,7 +67,7 @@ const selectedTextureType = ref<String>()
         </div>
         <div class="mesh-menu__row">
             <div class="mesh-menu__row-label">Texture material:</div>
-            <select v-if="typeof selectedTextureType === 'string'" @change="setTexture(texturesPaths[selectedTextureType][$event.target?.value] )">
+            <select v-if="typeof selectedTextureType === 'string'" @change="setTexture(texturesPaths[selectedTextureType][$event.target?.value] )"> // найти как типизировать 
                 <option value=""></option>
                 <option 
                     v-if="selectedTextureType"
@@ -71,8 +80,7 @@ const selectedTextureType = ref<String>()
             </select>
         </div>
         
-        <button class="mesh-menu__button"
-            @click="delMesh()"
+        <button class="mesh-menu__button" @click="delMesh()"
         >
             Delete mesh
         </button>
@@ -102,30 +110,25 @@ const selectedTextureType = ref<String>()
         margin-top: 10px
         display: flex
         justify-content: space-between
+        align-items: center
 
         &>select
-            width: 140px
+            width: 146px
 
             cursor: pointer
 
     .mesh-menu__position
-        width: 140px
+        width: 146px
         display: flex
         justify-content: space-between
 
         &>input
-            width: 40px
+            width: 42px
 
             text-align: right
 
     .mesh-menu__button
         margin-top: 10px
         height: 25px
-        
-
-        
-
-
-
 
 </style>
