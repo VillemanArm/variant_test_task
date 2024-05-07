@@ -2,13 +2,6 @@
 import { reactive, ref, computed, onMounted, onUpdated, watch } from 'vue'
 import * as THREE from 'three';
 import type { Textures } from '@/components/canvasFor3D.vue'
-import type { FunctionNode } from 'three/examples/jsm/nodes/Nodes.js';
-
-// defineProps<{
-//     mesh: THREE.Mesh,
-// }>();
-
-
 
 const { mesh, texturesPaths } = defineProps<{ 
 	mesh: THREE.Mesh,
@@ -67,7 +60,7 @@ const selectedTextureType = ref<String>()
         </div>
         <div class="mesh-menu__row">
             <div class="mesh-menu__row-label">Texture material:</div>
-            <select v-if="typeof selectedTextureType === 'string'" @change="setTexture(texturesPaths[selectedTextureType][$event.target?.value] )"> // найти как типизировать 
+            <select v-if="typeof selectedTextureType === 'string'" @change="setTexture(texturesPaths[selectedTextureType][($event.target as HTMLInputElement)?.value] )"> 
                 <option value=""></option>
                 <option 
                     v-if="selectedTextureType"
@@ -80,8 +73,7 @@ const selectedTextureType = ref<String>()
             </select>
         </div>
         
-        <button class="mesh-menu__button" @click="delMesh()"
-        >
+        <button class="mesh-menu__button" @click="delMesh()">
             Delete mesh
         </button>
 

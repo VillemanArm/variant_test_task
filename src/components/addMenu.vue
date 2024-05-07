@@ -1,7 +1,5 @@
 <script setup lang='ts'>
 import { reactive, ref, computed, onMounted, onUpdated, watch } from 'vue'
-//import type {Geometry} from './canvasFor3D.vue'
-
 
 defineProps<{
     geometries: string[],
@@ -25,9 +23,7 @@ const geometrySelect = ref<HTMLInputElement>()
             </option>
         </select>
         <button 
-            @click="() => {
-                if(geometrySelect) addMesh(geometrySelect.value)
-               }"
+            @click="addMesh(geometrySelect?.value)"
         >
             Add mesh
         </button>
@@ -58,7 +54,5 @@ const geometrySelect = ref<HTMLInputElement>()
 
         &>button
             padding: 2px 6px
-
-
 
 </style>

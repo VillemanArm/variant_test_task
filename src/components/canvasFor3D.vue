@@ -19,7 +19,8 @@ interface Textures {
 export type {Textures}
 
 const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`
-const geometries: string[] = ['chair', 'cube', 'helmet', 'suzanne']
+
+const geometries: string[] = ['chair', 'cube', 'helmet', 'suzanne'] // список подгружаемых мэшей
 const texturesPaths: Textures = { // структура для выбора текстур сделана так чтобы оставаться независимой при добавлении новых текстур
 	albedo: {
 		leather: '/meshes/textures/albedo/albedo-leather.ktx2', 
@@ -46,35 +47,57 @@ const texturesPaths: Textures = { // структура для выбора те
 		wood: '/meshes/textures/roughness/roughness-wood.png'
 	}
 }
-
-let canvas: HTMLElement // элемент, в котором будет отображаться 3D элемент
+const canvas = ref<HTMLElement>() 
 const selectedMesh = ref<THREE.Mesh>()
 
-const scene = new THREE.Scene();
+let scene: THREE.Scene
 
-const gridHelper = new THREE.GridHelper( 20, 20, 0x707a87, 0xffffff )
-scene.add(gridHelper)
+const createScene = () => {
+	scene = new THREE.Scene();
+	
+	const gridHelper = new THREE.GridHelper( 20, 20, 0x707a87, 0xffffff )
+	scene.add(gridHelper)
+	
+	const axesHelper = new THREE.AxesHelper( 2 ); // создание объекта, показыващего оси. Принимает длину осей
+	scene.add( axesHelper)
+}
 
-const axesHelper = new THREE.AxesHelper( 2 ); // создание объекта, показыващего оси. Принимает длину осей
-scene.add( axesHelper)
+createScene()
 
 let camera: THREE.PerspectiveCamera
 
-const light = new THREE.DirectionalLight(0xffffff, 1); // создание света
-light.position.set(5, 4, 2);
-scene.add(light)
+const createCamera = () => {	camera = new THREE.PerspectiveCamera( 70, (canvas.value?.offsetWidth || window.innerWidth) / (canvas.value?.offsetHeight || window.innerHeight)); // создание камеры. передаем угол обзора в градусах и соотношение сторон
+	camera.position.set(4, 4, 4)
+	camera.lookAt(scene.position); 
+
+	const controls = new OrbitControls(camera, renderer.domElement)
+	
+	scene.add( camera )
+	controls.update();
+}	
+
+let light: THREE.DirectionalLight
+
+const createLight = () => {
+	light = new THREE.DirectionalLight(0xffffff, 1); // создание света
+	light.position.set(5, 4, 2);
+	scene.add(light)
+}
+
+createLight()
 
 let renderer: THREE.WebGLRenderer
 
 const createRenderer = () => {
-	renderer = new THREE.WebGLRenderer({ canvas: canvas}); // создание отрисовщика
+	renderer = new THREE.WebGLRenderer({ canvas: canvas.value}); // создание отрисовщика
 	renderer.setClearColor('grey') // установка цвета фона
-	renderer.setSize( canvas?.offsetWidth || window.innerWidth, canvas?.offsetHeight || window.innerHeight) // установка размера рендерера
+	renderer.setSize( canvas.value?.offsetWidth || window.innerWidth, canvas.value?.offsetHeight || window.innerHeight) // установка размера рендерера
 }
 
 const renderScene = (): void => {
 	renderer.render(scene, camera)
 	requestAnimationFrame(renderScene)
+	// animation example
 	// cube.rotation.x += 0.01
 	// cube.rotation.y += 0.01
 }
@@ -87,12 +110,9 @@ const addMesh = (meshName: string) => {
 		(gltf) => {		
 			selectedMesh.value = gltf.scene.children[0]	as THREE.Mesh
 			gltf.scene.children.forEach((mesh) => {
-					console.log(mesh)
 					scene.add(mesh);
 				}
 			);
-			
-			renderer.render(scene, camera)
 		},
 		undefined,
 		(error) => {
@@ -192,36 +212,28 @@ const setMeshAngle = (event: Event, axis: 'x' | 'y' | 'z') => {
 }
 
 onMounted(() => {
-	canvas = document.querySelector('.canvas') as HTMLElement
-
+	// Для возможности вставки нескольких независимых канвасов на страницу пришлось сделать ссылку 
+	// на канвас через ref, а ref определяется во время монтажа компонента
+	// Поэтому создание компонентов, которые ссылаются на канвас, вынесено в хук onMounted
 	createRenderer()
-
-	camera = new THREE.PerspectiveCamera( 70, (canvas?.offsetWidth || window.innerWidth) / (canvas?.offsetHeight || window.innerHeight)); // создание камеры. передаем угол обзора в градусах и соотношение сторон
-	camera.position.set(4, 4, 4)
-	camera.lookAt(scene.position); 
-
-	const controls = new OrbitControls(camera, renderer.domElement)
-	
-	scene.add( camera )
-	controls.update();
-
+	createCamera()
 	renderScene()
 })
-
-
-
-
 
 </script>
 
 <template>
 	<div class="canvas__wrap">
 		<canvas 
+			ref="canvas"
 			class="canvas" 
 			@click="selectMesh($event)"
 		>
 		</canvas>
-		<addMenu :geometries="geometries" :addMesh="addMesh"/>
+		<addMenu 
+			:geometries="geometries" 
+			:addMesh="addMesh"
+		/>
 		<meshMenu 
 			v-if="selectedMesh" 
 			:mesh="selectedMesh"
@@ -238,8 +250,6 @@ onMounted(() => {
 
 <style lang="sass">
 	@import '@/assets/styles/constants.sass'
-	// body
-	// 	overflow: hidden
 
 	.canvas__wrap
 		position: relative
@@ -249,7 +259,6 @@ onMounted(() => {
 		width: 100vw
 		height: 100vh
 		
-
 	.add-menu
 		top: 10px
 		right: 10px
