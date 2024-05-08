@@ -23,28 +23,28 @@ const THREE_PATH = `https://unpkg.com/three@0.${REVISION}.x`
 const geometries: string[] = ['chair', 'cube', 'helmet', 'suzanne'] // список подгружаемых мэшей
 const texturesPaths: Textures = { // структура для выбора текстур сделана так чтобы оставаться независимой при добавлении новых текстур
 	albedo: {
-		leather: '/meshes/textures/albedo/albedo-leather.ktx2', 
-		metal: '/meshes/textures/albedo/albedo-metal.png', 
-		velours: '/meshes/textures/albedo/albedo-velours.png', 
-		wood: '/meshes/textures/albedo/albedo-wood.png'
+		leather: './meshes/textures/albedo/albedo-leather.ktx2', 
+		metal: './meshes/textures/albedo/albedo-metal.png', 
+		velours: './meshes/textures/albedo/albedo-velours.png', 
+		wood: './meshes/textures/albedo/albedo-wood.png'
 	}, 
 	metalness: {
-		leather: '/meshes/textures/metalness/metalness-leather.ktx2', 
-		metal: '/meshes/textures/metalness/metalness-metal.png', 
-		velours: '/meshes/textures/metalness/metalness-velours.png', 
-		wood: '/meshes/textures/metalness/metalness-wood.png'
+		leather: './meshes/textures/metalness/metalness-leather.ktx2', 
+		metal: './meshes/textures/metalness/metalness-metal.png', 
+		velours: './meshes/textures/metalness/metalness-velours.png', 
+		wood: './meshes/textures/metalness/metalness-wood.png'
 	}, 
 	normal: {
-		leather: '/meshes/textures/normal/normal-leather.ktx2', 
-		metal: '/meshes/textures/normal/normal-metal.png', 
-		velours: '/meshes/textures/normal/normal-velours.png', 
-		wood: '/meshes/textures/normal/normal-wood.png'
+		leather: './meshes/textures/normal/normal-leather.ktx2', 
+		metal: './meshes/textures/normal/normal-metal.png', 
+		velours: './meshes/textures/normal/normal-velours.png', 
+		wood: './meshes/textures/normal/normal-wood.png'
 	}, 
 	roughness: {
-		leather: '/meshes/textures/roughness/roughness-leather.ktx2', 
-		metal: '/meshes/textures/roughness/roughness-metal.png', 
-		velours: '/meshes/textures/roughness/roughness-velours.png', 
-		wood: '/meshes/textures/roughness/roughness-wood.png'
+		leather: './meshes/textures/roughness/roughness-leather.ktx2', 
+		metal: './meshes/textures/roughness/roughness-metal.png', 
+		velours: './meshes/textures/roughness/roughness-velours.png', 
+		wood: './meshes/textures/roughness/roughness-wood.png'
 	}
 }
 const canvas = ref<HTMLElement>() 
@@ -106,7 +106,7 @@ const meshLoader = new GLTFLoader();
 
 const addMesh = (meshName: string) => {
 	meshLoader.load(
-		`/meshes/geometries/${meshName}.glb`, 
+		`./meshes/geometries/${meshName}.glb`, 
 		(gltf) => {		
 			selectedMesh.value = gltf.scene.children[0]	as THREE.Mesh
 			gltf.scene.children.forEach((mesh) => {
